@@ -69,13 +69,13 @@ class Model(nn.Module):
         self.block1 = self.convolution(c_in=3, c_out=16,kernel_size = 3, stride = 1)
         self.block2 = self.convolution(c_in=16,c_out=32,kernel_size=3,stride = 1)
         self.block3 = self.convolution(c_in = 32,c_out =64, kernel_size=3,stride=1)
-
+        self.linear = self.linear_layers()
     def forward(self,x):
         x = self.block1(x)
         x = self.block2(x)
         x = self.block3(x)
         x = x.view(-1,64*17*17)
-        return self.linear_layers(x)
+        return self.linear(x)
 
     def convolution(self,c_in,c_out, **kwargs):
         seq_block = nn.Sequential(
@@ -86,9 +86,11 @@ class Model(nn.Module):
         return seq_block
 
     def linear_layers(self):
-        self.linear = nn.Sequential(
+        linear_block = nn.Sequential(
             nn.Linear(in_features = 17*17*64,out_features=512),
             nn.ReLU(),
             nn.Linear(512,1),
             nn.Sigmoid()
         )
+        return linear_block
+
