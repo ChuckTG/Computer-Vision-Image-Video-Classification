@@ -94,3 +94,27 @@ class Model(nn.Module):
         )
         return linear_block
 
+if __name__ == "__main__":
+    num_epochs = 80
+    model = Model()
+    if torch.cuda.is_available():
+        model.to('cuda')
+    optimizer = optim.RMSprop(params = model.parameters(),lr=0.001)
+    for epoch in range(num_epochs):
+        for imgs,classes in dataloaders['train']:
+            imgs,classes = imgs.float(),classes.float()
+            if torch.cuda.is_available():
+                imgs,classes = imgs.to('cuda'),classes.to('cuda')
+            output = model(imgs)
+            loss   = F.binary_cross_entropy(output,classes)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            with torch.no_grad():
+                _, preds = torch.max(output,1)
+                accuracy = torch.sum(preds == classes)
+                print('Epoch {} \tLoss {:.4f} \tAcc: {}'
+                      .format(epoch+1,loss.item(),accuracy.item()))
+
